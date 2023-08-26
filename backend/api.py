@@ -1,6 +1,5 @@
 import waitress
 from flask import Flask, request, jsonify, session
-import utils
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -39,7 +38,7 @@ def get_user_text():
         "userid": len(users),
     })
     
-    binary_id = utils.get_binary(len(users) - 1)
+    binary_id = get_binary(len(users) - 1)
 
     binary_id = binary_id.replace("0", b)
     binary_id = binary_id.replace("1", c)
@@ -67,7 +66,7 @@ def get_user_id():
     binary_id = binary_id.replace(b, "0")
     binary_id = binary_id.replace(c, "1")
 
-    user_id = utils.get_int(binary_id)
+    user_id = get_int(binary_id)
     
     possible_users = [user["username"] for user in users if user["userid"] == user_id]
 
@@ -78,6 +77,11 @@ def get_user_id():
 
     return jsonify({'success': True, 'username': username}), 200
 
+def get_binary(number: int) -> str:
+    return bin(number)[2:]
+
+def get_int(binary: str) -> int:
+    return int(binary, 2)
 
 if __name__ == '__main__':
     waitress.serve(app, port=5000)
