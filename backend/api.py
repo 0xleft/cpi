@@ -1,6 +1,7 @@
 import waitress
 from flask import Flask, request, jsonify, session
 from flask_cors import CORS
+import threading
 
 app = Flask(__name__)
 # allow cors for http://localhost:5000 and https://0xleft.github.io
@@ -9,10 +10,10 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 
 users = []
 
-@app.route('/api/clear_users', methods=['GET'])
 def clear_users():
+    global users
     users.clear()
-    return jsonify({'success': True}), 200
+    threading.Timer(60.0, clear_users).start()
 
 @app.route('/api/get_user_text', methods=['POST'])
 def get_user_text():
@@ -22,6 +23,9 @@ def get_user_text():
 
     b = "​"
     c = "‌"
+
+    if "text" not in data or "username" not in data:
+        return jsonify({'success': False, "message": "missing data"}), 400
 
     text = data["text"]
     username = data["username"]
@@ -33,6 +37,9 @@ def get_user_text():
     if any(user["username"] == username for user in users):
         return jsonify({'success': False, "message": "username is already used up"}), 400
     
+    if len(users) >= 2**16:
+        return jsonify({'success': False, "message": "too many users"}), 400
+
     users.append({
         "username": username,
         "userid": len(users),
@@ -53,6 +60,9 @@ def get_user_text():
 def get_user_id():
     text = request.args.get('text')
 
+    if text is None:
+        return jsonify({'success': False, "message": "no text"}), 400
+
     b = "​"
     c = "‌"
 
@@ -66,8 +76,11 @@ def get_user_id():
     binary_id = binary_id.replace(b, "0")
     binary_id = binary_id.replace(c, "1")
 
-    user_id = get_int(binary_id)
-    
+    try:
+        user_id = get_int(binary_id)
+    except:
+        return jsonify({'success': False, "message": "invalid binary_id"}), 400
+
     possible_users = [user["username"] for user in users if user["userid"] == user_id]
 
     if len(possible_users) == 0:
@@ -84,4 +97,5 @@ def get_int(binary: str) -> int:
     return int(binary, 2)
 
 if __name__ == '__main__':
+    clear_users()
     waitress.serve(app, port=5000)
