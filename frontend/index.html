@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>cpi</title>
+</head>
+<style>
+    .contentdiv {
+        /* card looking */
+        border: 1px solid black;
+        border-radius: 5px;
+        padding: 10px;
+        margin: 10px;
+
+        /* flexbox */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+
+        width: 100%;
+    }
+</style>
+<body>
+    <div id="container">
+        <div id="header" style="min-height: 10vh; display: flex; justify-content: center; align-items: center;">
+            <h3>Copy paste tracking POC</h3>
+        </div>
+        <div id="content" style="min-height: 100vh;">
+            <div class="contentdiv">
+                <form id="get_user_text">
+                    <label for="username">Username</label>
+                    <input type="text" name="username" id="username">
+                    <label for="user_text">Text</label>
+                    <input type="text" name="user_text" id="user_text">
+                    <input type="submit" value="Sprinkle magic sauce">
+                </form>
+                <p>copy this text: <br><code id="text_out"></code><button onclick="navigator.clipboard.writeText(document.getElementById('text_out').innerHTML)">
+                    click to copy
+                </button></p>
+            </div>
+
+            <div class="contentdiv">
+                <form id="get_user_id">
+                    <label for="user_text_to_id">Text</label>
+                    <input type="text" name="user_text" id="user_text_to_id">
+                    <input type="submit" value="Submit">
+                </form>
+                <p>predicted username: <br><span id="predicted_username"></span></p>
+            </div>
+
+            <div class="contentdiv">
+                <h3>Why?</h3>
+
+                <p style="width: 50%;">
+                Imagine a scenario where a website has a bunch invisible watermarks in its text and if someone copies and paste it somewhere then the everyone would know that it was copied from a certain website.</p>
+                That would be a huge privacy concern.</p>
+
+                <p>Source code for server side: <a href="https://github.com/0xleft/cpi">github</a></p>
+            </div>
+        </div>
+
+        <div id="footer" style="min-height: 10vh;">
+            <h1>Why gui so bad 💀</h1>
+        </div>
+    </div>
+
+    <script>
+        function showNotification(text) {
+            alert(text);
+        }
+    </script>
+
+    <script>
+        document.getElementById("get_user_text").addEventListener("submit", (e) => {
+            e.preventDefault();
+            let username = document.getElementById("username").value;
+            let user_text = document.getElementById("user_text").value;
+            let data = {
+                username: username,
+                text: user_text
+            }
+            fetch("http://localhost:5000/api/get_user_text", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            }).then((response) => {
+                response.json().then((data) => {
+                    if (data.success != true) {
+                        showNotification(data.message);
+                    } else {
+                        document.getElementById("text_out").textContent = data.text;
+                    }    
+                })
+            })
+        })
+
+        document.getElementById("get_user_id").addEventListener("submit",(e) => {
+            e.preventDefault();
+            let user_text = document.getElementById("user_text_to_id").value;
+            fetch("http://localhost:5000/api/get_user_id?text=" + encodeURI(user_text)).then((response) => {
+                response.json().then((data) => {
+                    if (data.success != true) {
+                        showNotification(data.message);
+                    } else {
+                        document.getElementById("predicted_username").textContent = data.username;
+                    }    
+                })
+            }
+        )})
+    </script>
+</body>
+</html>
