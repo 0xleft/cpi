@@ -85,7 +85,7 @@
                 username: username,
                 text: user_text
             }
-            fetch("http://localhost:5000/api/get_user_text", {
+            fetch("https://pageup.lt/api/get_user_text", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -105,7 +105,7 @@
         document.getElementById("get_user_id").addEventListener("submit",(e) => {
             e.preventDefault();
             let user_text = document.getElementById("user_text_to_id").value;
-            fetch("http://localhost:5000/api/get_user_id?text=" + encodeURI(user_text)).then((response) => {
+            fetch("https://pageup.lt/api/get_user_id?text=" + encodeURI(user_text)).then((response) => {
                 response.json().then((data) => {
                     if (data.success != true) {
                         showNotification(data.message);
