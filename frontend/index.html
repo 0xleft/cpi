@@ -34,11 +34,16 @@
                 </p>
                 <form id="get_user_text">
                     <label for="username">Username</label>
-                    <input type="text" name="username" id="username">
+                    <input type="text" name="username" id="username" required>
                     <label for="user_text">Text</label>
-                    <input type="text" name="user_text" id="user_text">
+                    <input type="text" name="user_text" id="user_text" required>
                     <input type="submit" value="Sprinkle magic sauce">
                 </form>
+
+                <p>
+                    Make sure to open notepad and paste both of your text and see if there are any differences.
+                </p>
+
                 <p>copy this text: <br><code id="text_out"></code><button onclick="navigator.clipboard.writeText(document.getElementById('text_out').innerHTML)">
                     click to copy
                 </button></p>

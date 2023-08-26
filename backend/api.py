@@ -10,11 +10,6 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 
 users = []
 
-def clear_users():
-    global users
-    users.clear()
-    threading.Timer(60.0, clear_users).start()
-
 @app.route('/api/get_user_text', methods=['POST'])
 def get_user_text():
     data = request.get_json(silent=True, force=True)
@@ -38,13 +33,14 @@ def get_user_text():
         return jsonify({'success': False, "message": "username is already used up"}), 400
     
     if len(users) >= 2**16:
-        return jsonify({'success': False, "message": "too many users"}), 400
+        users.clear()
+        return jsonify({'success': False, "message": "too many users; try again"}), 400
 
     users.append({
         "username": username,
         "userid": len(users),
     })
-    
+
     binary_id = get_binary(len(users) - 1)
 
     binary_id = binary_id.replace("0", b)
@@ -97,5 +93,4 @@ def get_int(binary: str) -> int:
     return int(binary, 2)
 
 if __name__ == '__main__':
-    clear_users()
     waitress.serve(app, port=5000)
